@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/hashicorp/hcl/v2/ext/typeexpr"
 	"github.com/hashicorp/nomad/ci"
 	"github.com/shoenig/test/must"
 	"github.com/zclconf/go-cty/cty"
@@ -25,6 +26,22 @@ func TestMergeHonorsDeclaredType(t *testing.T) {
 	}
 	if diags := v.Merge(&Variable{Type: cty.String, Value: cty.StringVal("next")}); diags.HasErrors() {
 		t.Fatal(diags)
+	}
+}
+
+func TestRedeclarationReplacesOptionalDefaults(t *testing.T) {
+	attrs := map[string]cty.Type{"enabled": cty.Bool}
+	old := cty.ObjectWithOptionalAttrs(attrs, []string{"enabled"})
+	v := &Variable{Value: cty.ObjectVal(map[string]cty.Value{"enabled": cty.False})}
+	v.SetType(old)
+	v.SetTypeDefaults(&typeexpr.Defaults{Type: old, DefaultValues: map[string]cty.Value{"enabled": cty.False}})
+	in := &Variable{Value: cty.ObjectVal(map[string]cty.Value{"enabled": cty.True})}
+	in.SetType(cty.Object(attrs))
+	if diags := v.Merge(in); diags.HasErrors() {
+		t.Fatal(diags)
+	}
+	if diags := v.Merge(&Variable{Type: cty.EmptyObject, Value: cty.EmptyObjectVal}); !diags.HasErrors() {
+		t.Fatal("old optional defaults satisfied the new required attribute")
 	}
 }
 

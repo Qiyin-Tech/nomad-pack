@@ -149,6 +149,7 @@ func (v *Variable) Merge(in *Variable) hcl.Diagnostics {
 		v.Type = in.Type
 		if in.hasType {
 			v.ConstraintType = in.ConstraintType
+			v.TypeDefaults = in.TypeDefaults
 		}
 	}
 
