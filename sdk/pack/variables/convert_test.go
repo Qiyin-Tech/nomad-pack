@@ -12,6 +12,14 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
+func TestMergeHonorsDeclaredType(t *testing.T) {
+	v := &Variable{Value: cty.NumberIntVal(1)}
+	v.SetType(cty.Number)
+	if diags := v.Merge(&Variable{Type: cty.String, Value: cty.StringVal("wrong")}); !diags.HasErrors() {
+		t.Fatal("a file override replaced the declared number constraint")
+	}
+}
+
 func TestConvertCtyToInterface(t *testing.T) {
 	ci.Parallel(t)
 

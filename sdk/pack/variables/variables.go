@@ -123,6 +123,17 @@ func (v *Variable) AsOverrideString(pID pack.ID) string {
 }
 
 func (v *Variable) Merge(in *Variable) hcl.Diagnostics {
+	// Validate against the declaration before the upstream merge replaces Type
+	// with the incoming value's type. Keep its composite shape for templates.
+	if v.ConstraintType != cty.NilType && in.Value != cty.NilVal {
+		value := in.Value
+		if v.TypeDefaults != nil {
+			value = v.TypeDefaults.Apply(value)
+		}
+		if _, err := convert.Convert(value, v.ConstraintType); err != nil {
+			return hcl.Diagnostics{packdiags.DiagInvalidValueForType(err, in.DeclRange.Ptr())}
+		}
+	}
 	var diags hcl.Diagnostics
 	if in.Default != cty.NilVal {
 		v.hasDefault = in.hasDefault
