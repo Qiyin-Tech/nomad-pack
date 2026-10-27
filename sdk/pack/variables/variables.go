@@ -125,7 +125,7 @@ func (v *Variable) AsOverrideString(pID pack.ID) string {
 func (v *Variable) Merge(in *Variable) hcl.Diagnostics {
 	// Validate against the declaration before the upstream merge replaces Type
 	// with the incoming value's type. Keep its composite shape for templates.
-	if v.ConstraintType != cty.NilType && in.Value != cty.NilVal {
+	if !in.hasType && v.ConstraintType != cty.NilType && in.Value != cty.NilVal {
 		value := in.Value
 		if v.TypeDefaults != nil {
 			value = v.TypeDefaults.Apply(value)
@@ -147,6 +147,9 @@ func (v *Variable) Merge(in *Variable) hcl.Diagnostics {
 	if in.Type != cty.NilType {
 		v.hasType = in.hasType
 		v.Type = in.Type
+		if in.hasType {
+			v.ConstraintType = in.ConstraintType
+		}
 	}
 
 	if v.Value != cty.NilVal {

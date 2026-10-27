@@ -18,6 +18,14 @@ func TestMergeHonorsDeclaredType(t *testing.T) {
 	if diags := v.Merge(&Variable{Type: cty.String, Value: cty.StringVal("wrong")}); !diags.HasErrors() {
 		t.Fatal("a file override replaced the declared number constraint")
 	}
+	redeclared := &Variable{Value: cty.StringVal("ok")}
+	redeclared.SetType(cty.String)
+	if diags := v.Merge(redeclared); diags.HasErrors() {
+		t.Fatal(diags)
+	}
+	if diags := v.Merge(&Variable{Type: cty.String, Value: cty.StringVal("next")}); diags.HasErrors() {
+		t.Fatal(diags)
+	}
 }
 
 func TestConvertCtyToInterface(t *testing.T) {
