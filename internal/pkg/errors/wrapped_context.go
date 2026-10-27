@@ -69,9 +69,12 @@ func formatHCLRange(r *hcl.Range) string {
 // HCLDiagsToWrappedUIContext converts HCL specific hcl.Diagnostics into an
 // array of WrappedUIContext.
 func HCLDiagsToWrappedUIContext(diags hcl.Diagnostics) []*WrappedUIContext {
-	wrapped := make([]*WrappedUIContext, len(diags))
-	for i, diag := range diags {
-		wrapped[i] = &WrappedUIContext{
+	wrapped := make([]*WrappedUIContext, 0, len(diags))
+	for _, diag := range diags {
+		if diag.Severity == hcl.DiagWarning {
+			continue
+		}
+		entry := &WrappedUIContext{
 			Err:     newError(diag.Detail),
 			Subject: diag.Summary,
 			Context: NewUIErrorContext(),
@@ -88,8 +91,9 @@ func HCLDiagsToWrappedUIContext(diags hcl.Diagnostics) []*WrappedUIContext {
 		}
 
 		if rangeToUse != nil {
-			wrapped[i].Context.Add(UIContextPrefixHCLRange, formatHCLRange(rangeToUse))
+			entry.Context.Add(UIContextPrefixHCLRange, formatHCLRange(rangeToUse))
 		}
+		wrapped = append(wrapped, entry)
 	}
 	return wrapped
 }

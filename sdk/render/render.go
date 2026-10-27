@@ -47,7 +47,7 @@ func Render(opts Options) (*Result, error) {
 	out := &Result{Metadata: pm.Metadata(), Diagnostics: pm.Diagnostics()}
 	var errs []error
 	for _, failure := range failures {
-		errs = append(errs, failure.Err)
+		errs = append(errs, failure)
 	}
 	if err := errors.Join(errs...); err != nil {
 		return out, err

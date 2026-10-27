@@ -115,6 +115,7 @@ func (pm *PackManager) ProcessVariableFiles() (*parser.ParsedVariables, []*error
 			}
 		}
 		if diags != nil && diags.HasErrors() {
+			pm.diagnostics = diags
 			return nil, errors.HCLDiagsToWrappedUIContext(diags)
 		}
 	}
