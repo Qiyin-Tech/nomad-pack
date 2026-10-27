@@ -24,9 +24,9 @@ func DiagFileNotFound(f string) *hcl.Diagnostic {
 // is not defined for the pack.
 func DiagMissingRootVar(name string, sub *hcl.Range) *hcl.Diagnostic {
 	return &hcl.Diagnostic{
-		Severity: hcl.DiagError,
-		Summary:  "Missing base variable declaration to override",
-		Detail:   fmt.Sprintf(`There is no variable named %q. An override file can only override a variable that was already declared in a primary configuration file.`, name),
+		Severity: hcl.DiagWarning,
+		Summary:  "忽略未声明的变量",
+		Detail:   fmt.Sprintf("Pack 尚未声明变量 %q；本次忽略此输入。", name),
 		Subject:  sub,
 	}
 }

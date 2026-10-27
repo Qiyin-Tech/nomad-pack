@@ -37,7 +37,8 @@ type PackManager struct {
 	renderer *renderer.Renderer
 
 	// loadedPack is unavailable until the loadAndValidatePacks func is run.
-	loadedPack *pack.Pack
+	loadedPack  *pack.Pack
+	diagnostics hcl.Diagnostics
 }
 
 func NewPackManager(cfg *Config, client *api.Client) *PackManager {
@@ -51,6 +52,7 @@ func NewPackManager(cfg *Config, client *api.Client) *PackManager {
 // definition files. This is used between the variable override file generator
 // code and the ProcessTemplates logic in this file.
 func (pm *PackManager) ProcessVariableFiles() (*parser.ParsedVariables, []*errors.WrappedUIContext) {
+	pm.diagnostics = nil
 	loadedPack, err := pm.loadAndValidatePacks()
 	if err != nil {
 		return nil, []*errors.WrappedUIContext{{
@@ -90,6 +92,7 @@ func (pm *PackManager) ProcessVariableFiles() (*parser.ParsedVariables, []*error
 	}
 
 	parsedVars, diags := variableParser.Parse()
+	pm.diagnostics = diags
 	if diags != nil && diags.HasErrors() {
 		return nil, errors.HCLDiagsToWrappedUIContext(diags)
 	}
@@ -118,6 +121,9 @@ func (pm *PackManager) ProcessVariableFiles() (*parser.ParsedVariables, []*error
 
 	return parsedVars, nil
 }
+
+// Diagnostics returns the variable diagnostics from the latest processing pass.
+func (pm *PackManager) Diagnostics() hcl.Diagnostics { return pm.diagnostics }
 
 // ProcessTemplates is responsible for running all backend process for the
 // PackManager returning an error along with the ProcessedPack. This contains

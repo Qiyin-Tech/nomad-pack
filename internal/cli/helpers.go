@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/nomad/api"
 	"github.com/posener/complete"
 
@@ -187,6 +188,11 @@ func renderPack(
 	errCtx *errors.UIErrorContext,
 ) (*renderer.Rendered, error) {
 	r, err := manager.ProcessTemplates(renderAux, format, ignoreMissingVars)
+	for _, diag := range manager.Diagnostics() {
+		if diag.Severity == hcl.DiagWarning {
+			ui.Warning(diag.Error())
+		}
+	}
 	if err != nil {
 		packName := manager.PackName()
 		errCtx.Add(errors.UIContextPrefixPackName, packName)
@@ -211,6 +217,11 @@ func renderVariableOverrideFile(
 ) (*parser.ParsedVariables, error) {
 
 	r, err := manager.ProcessVariableFiles()
+	for _, diag := range manager.Diagnostics() {
+		if diag.Severity == hcl.DiagWarning {
+			ui.Warning(diag.Error())
+		}
+	}
 	if err != nil {
 		packName := manager.PackName()
 		errCtx.Add(errors.UIContextPrefixPackName, packName)

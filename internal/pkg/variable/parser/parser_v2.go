@@ -145,18 +145,9 @@ func (p *ParserV2) newParseOverridesFile(file string) (map[string]*hcl.File, hcl
 	for _, o := range ovrds[pack.ID(file)] {
 		// Identify whether this variable override is for a dependency pack
 		// and then handle it accordingly.
-		p.newHandleOverride(o)
-	}
-	return nil, diags
-}
-
-func (p *ParserV2) newHandleOverride(o *variables.Override) {
-	// Is Pack Variable Object?
-	// Check whether the name has an associated entry within the root variable
-	// mapping which indicates whether it's a pack object.
-	if _, ok := p.cfg.RootVariableFiles[o.Path]; ok {
 		p.newHandleOverrideVar(o)
 	}
+	return nil, diags
 }
 
 func (p *ParserV2) newHandleOverrideVar(o *variables.Override) {

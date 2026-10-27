@@ -8,11 +8,10 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
-	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/hashicorp/nomad-pack/internal/pkg/flag"
+	packfmt "github.com/hashicorp/nomad-pack/sdk/format"
 	"github.com/posener/complete"
 )
 
@@ -128,31 +127,13 @@ func (c *FmtCommand) formatFile(path string) (bool, error) {
 }
 
 func (c *FmtCommand) formatTemplate(content string) (string, error) {
-	placeholders := make(map[string]string)
-	placeholderIndex := 0
-
-	templateRegex := regexp.MustCompile(`\[\[.*?\]\]`)
-
-	contentWithPlaceholders := templateRegex.ReplaceAllStringFunc(content, func(match string) string {
-		placeholder := fmt.Sprintf("__NOMAD_PACK_TPL_%d__", placeholderIndex)
-		placeholders[placeholder] = match
-		placeholderIndex++
-		return placeholder
-	})
-
-	formatted := hclwrite.Format([]byte(contentWithPlaceholders))
-	formattedStr := string(formatted)
-
-	for placeholder, original := range placeholders {
-		formattedStr = strings.ReplaceAll(formattedStr, placeholder, original)
-	}
-
-	return formattedStr, nil
+	formatted, err := packfmt.Source("template.tpl", []byte(content))
+	return string(formatted), err
 }
 
 func (c *FmtCommand) formatHCL(content string) (string, error) {
-	formatted := hclwrite.Format([]byte(content))
-	return string(formatted), nil
+	formatted, err := packfmt.Source("input.hcl", []byte(content))
+	return string(formatted), err
 }
 
 func (c *FmtCommand) findFormattableFiles(dir string) ([]string, error) {

@@ -42,9 +42,9 @@ func TestPackDiag_DiagMissingRootVar(t *testing.T) {
 	ci.Parallel(t)
 	diag := DiagMissingRootVar("myVar", &testRange)
 
-	must.Eq(t, diag.Severity, hcl.DiagError)
-	must.Eq(t, "Missing base variable declaration to override", diag.Summary)
-	must.Eq(t, `There is no variable named "myVar". An override file can only override a variable that was already declared in a primary configuration file.`, diag.Detail)
+	must.Eq(t, diag.Severity, hcl.DiagWarning)
+	must.Eq(t, "忽略未声明的变量", diag.Summary)
+	must.Eq(t, `Pack 尚未声明变量 "myVar"；本次忽略此输入。`, diag.Detail)
 	must.Eq(t, testRange, *diag.Subject)
 }
 
