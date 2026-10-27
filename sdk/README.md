@@ -11,6 +11,7 @@ result, err := render.Render(render.Options{
 ```
 
 变量来源必须显式传入，SDK 不自动读取环境变量。诊断经 `Result.Diagnostics` 返回，调用者将 warning 与渲染内容分开输出。
+BaseDir 可指定 fileContents 的相对文件基准；默认保持当前目录语义，SDK 不修改进程 cwd。
 未声明的输入被忽略并 warning；语法、已声明类型和必填错误仍失败。上游变量优先级和模板缺失字段语义保持不变。
 
 上游接点保持独立：

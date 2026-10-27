@@ -22,6 +22,7 @@ import (
 // the pack manager.
 type Config struct {
 	Path            string
+	BaseDir         string
 	VariableFiles   []string
 	VariableCLIArgs map[string]string
 	VariableEnvVars map[string]string
@@ -150,6 +151,7 @@ func (pm *PackManager) ProcessTemplates(renderAux bool, format bool, ignoreMissi
 	r := new(renderer.Renderer)
 	r.Client = pm.client
 	r.PackPath = pm.cfg.Path
+	r.BaseDir = pm.cfg.BaseDir
 	pm.renderer = r
 
 	// should auxiliary files be rendered as well?

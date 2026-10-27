@@ -17,6 +17,7 @@ import (
 // implicitly. A nil Client disables template functions that query Nomad.
 type Options struct {
 	Path          string
+	BaseDir       string // Relative fileContents paths; empty retains process cwd.
 	VariableFiles []string
 	Variables     map[string]string
 	Environment   map[string]string
@@ -39,7 +40,7 @@ type Result struct {
 // nomad-pack. The caller owns source acquisition and output presentation.
 func Render(opts Options) (*Result, error) {
 	pm := manager.NewPackManager(&manager.Config{
-		Path: opts.Path, VariableFiles: opts.VariableFiles,
+		Path: opts.Path, BaseDir: opts.BaseDir, VariableFiles: opts.VariableFiles,
 		VariableCLIArgs: opts.Variables, VariableEnvVars: opts.Environment,
 		UseParserV1: opts.ParserV1, AllowUnsetVars: opts.AllowUnset,
 	}, opts.Client)

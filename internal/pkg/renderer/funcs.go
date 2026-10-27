@@ -6,6 +6,7 @@ package renderer
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -59,6 +60,14 @@ func funcMap(r *Renderer) template.FuncMap {
 
 	// Add additional custom functions.
 	f["fileContents"] = fileContents
+	if r != nil && r.BaseDir != "" {
+		f["fileContents"] = func(file string) (string, error) {
+			if !filepath.IsAbs(file) {
+				file = filepath.Join(r.BaseDir, file)
+			}
+			return fileContents(file)
+		}
+	}
 	f["toStringList"] = toStringList
 	f["tpl"] = tplFunc(r)
 

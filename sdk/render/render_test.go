@@ -1,6 +1,7 @@
 package render_test
 
 import (
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -113,5 +114,33 @@ func TestTemplateErrorLocation(t *testing.T) {
 	_, err := render.Render(render.Options{Path: dir, Variables: map[string]string{"count": "1"}})
 	if err == nil || !strings.Contains(err.Error(), "main.nomad.tpl") || !strings.Contains(err.Error(), "broken") {
 		t.Fatalf("template location lost: %v", err)
+	}
+}
+
+func TestExternalFileBase(t *testing.T) {
+	dir, base := fixture(t), t.TempDir()
+	for name, data := range map[string]string{
+		filepath.Join(dir, "templates/main.nomad.tpl"): "job \"example\" { value = [[ fileContents \"external.txt\" | quote ]] }\n",
+		filepath.Join(base, "external.txt"):            "expected",
+		filepath.Join(base, "sub/external.txt"):        "wrong",
+	} {
+		if err := os.MkdirAll(filepath.Dir(name), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(name, []byte(data), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	opts := render.Options{Path: dir, BaseDir: base, Variables: map[string]string{"count": "1"}}
+	t.Chdir(base)
+	first, err := render.Render(opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Chdir(filepath.Join(base, "sub"))
+	second, err := render.Render(opts)
+	cwd, cwdErr := os.Getwd()
+	if err != nil || !maps.Equal(first.Templates, second.Templates) || !strings.Contains(second.Templates["example/templates/main.nomad.tpl"], `"expected"`) || cwdErr != nil || cwd != filepath.Join(base, "sub") {
+		t.Fatalf("external file base or process cwd changed: %+v %v %s", second, err, cwd)
 	}
 }

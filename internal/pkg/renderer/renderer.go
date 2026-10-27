@@ -30,6 +30,9 @@ type Renderer struct {
 	// PackPath is the path to the pack being rendered.
 	PackPath string
 
+	// BaseDir resolves external relative files without changing process cwd.
+	BaseDir string
+
 	// Client is the Nomad API client used when running the Nomad template
 	// functions. It can potentially be nil, therefore care should be taken
 	// when accessing it.
